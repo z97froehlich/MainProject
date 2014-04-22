@@ -70,7 +70,7 @@ public class Test extends Canvas implements Runnable {
     }
 
     private void drawRect(int x, int y, int w, int h) {
-    	int col = (int) (346346*Math.random());
+    	int col = (int) (16777216*Math.random());
         for (int i = x; i < w; i++) {
             for (int j = x; j < h; j++) {
                 pixels[i + j * WIDTH] = col;
