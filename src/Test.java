@@ -1,21 +1,34 @@
+<<<<<<< HEAD
 import javax.imageio.ImageIO;
+=======
+>>>>>>> 23dedb6357f5efe26c8b29aa55a638db04fc16e1
 import javax.swing.JFrame;
 import java.awt.Canvas;
 import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+<<<<<<< HEAD
 import java.io.File;
 import java.io.IOException;
+=======
+>>>>>>> 23dedb6357f5efe26c8b29aa55a638db04fc16e1
 
 public class Test extends Canvas implements Runnable {
 
     private static final long serialVersionUID = 1L;
+<<<<<<< HEAD
     public static int WIDTH = 600;
     public static int HEIGHT = 600;
     public boolean running = true;
     public int[] pixels;
     public int[] background;
+=======
+    public static int WIDTH = 800;
+    public static int HEIGHT = 600;
+    public boolean running = true;
+    public int[] pixels;
+>>>>>>> 23dedb6357f5efe26c8b29aa55a638db04fc16e1
     public BufferedImage img;
     public static JFrame frame;
     public static int count= 0;
@@ -56,7 +69,11 @@ public class Test extends Canvas implements Runnable {
             createBufferStrategy(3);
             return;
         }
+<<<<<<< HEAD
         drawRect(0, 0, WIDTH, HEIGHT);
+=======
+        drawRect(0, 0, 150, 150);
+>>>>>>> 23dedb6357f5efe26c8b29aa55a638db04fc16e1
         Graphics g = bs.getDrawGraphics();
         g.drawImage(img, 0, 0, WIDTH, HEIGHT, null);
         System.out.println("printing");
@@ -73,6 +90,7 @@ public class Test extends Canvas implements Runnable {
 
     }
 
+<<<<<<< HEAD
     private void drawRect(int x, int y, int w, int h) 
     	{
     		if(background == null)
@@ -106,3 +124,16 @@ public class Test extends Canvas implements Runnable {
     		
     	}
 }
+=======
+    private void drawRect(int x, int y, int w, int h) {
+    	int col = (int) (16777216*Math.random());
+        for (int i = x; i < w; i++) {
+            for (int j = x; j < h; j++) {
+                pixels[i + j * WIDTH] = col;
+            }
+        }
+
+
+    }
+}
+>>>>>>> 23dedb6357f5efe26c8b29aa55a638db04fc16e1
