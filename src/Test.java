@@ -123,6 +123,9 @@ public class Test extends Canvas implements Runnable
         			if(names.size()==0 || outs == 3)
         			{
         				names = new ArrayList<Integer>();
+        				one = false;
+        				two = false;
+        				three = false;
             			for(int i = 0; i< 10; i++)
             			{
             				names.add(i);
@@ -130,6 +133,10 @@ public class Test extends Canvas implements Runnable
             			try 
             			{
             				inning++;
+            				if(inning == 11)
+            					{
+            						//END GAME
+            					}
     						Scanner scan = new Scanner(new File("Natural Questions/"+inning+"/Answers.txt"));
     						answers = scan.next();
     					}
@@ -234,35 +241,42 @@ public class Test extends Canvas implements Runnable
     			drawPicture(0,0,960,960, second);
     			drawPicture(0,100,960,200, question);
     			drawPicture(0,510,256,256, player0);
-    			drawPicture(pos,692,28,28,baseball);
     			if(System.currentTimeMillis()-500>time)
     			{
     				sound("nes-11-08.wav");
-    				pos-=50;
+    				pos-=30;
+    				drawPicture(pos,692,28,28,baseball);
+    				render();
     				time = System.currentTimeMillis();
     			}
-    			render();
+    			
     			char c = key.update();
     			if(c==a)
     			{
+    				
     				hit(true);
     				state = true;
     				break;
     			}
     			else if(c!='E' && c!=' ')
     			{
+    				
     				hit(false);
     				state = true;
     				break;
     			}
     		}
+    		if(pos <=100)
+    			{
+    				hit(false);
+    				state = true;
+    			}
     		state = true;
     	}
 	}
     
 	private void hit(boolean answer)
 	{
-		//runs through next pictures
 		sleep(500);
 		drawPicture(0,0,960,960, second);
 		drawPicture(pos-50,692,28,28,baseball);
@@ -277,36 +291,33 @@ public class Test extends Canvas implements Runnable
 		sound("nes-10-10.wav");
 		sleep(500); 
 		
-		//if the player answered correctly in the correct spot
 		if(answer && pos <= 360 && pos >=184)
 			{
-				//go to the third setting-re pitch
+				swing();
 				drawPicture(0,0,960,960, second);
 				drawPicture(0,510,256,256, player0);
 				drawPicture(100,100,400,80,enter);
 				sleep(1000);
 				pos = 960;
-				//keeps the ball in bounds
 				while(pos > 50)
 					{
 						drawPicture(0,0,960,960, second);
 						drawPicture(100,100,400,80,enter);
 		    			drawPicture(0,510,256,256, player0);
-		    			drawPicture(pos,692,28,28,baseball);
 		    			
-		    			//if enough time has passed, move ball again
-		    			if(System.currentTimeMillis()-40>time)
+		    			if(System.currentTimeMillis()-35>time)
 		    			{
-		    				int i = (int) (Math.random()*20) -10;
+		    				int i = (int) (Math.random()*30) -15;
 		    				pos-=50 + i;
+		    				drawPicture(pos,692,28,28,baseball);
 		    				time = System.currentTimeMillis();
 		    				sound("nes-11-08.wav");
+		    				render();
+		    				System.out.println(pos);
 		    			}
 		    			
-		    			render();
-		    			System.out.println(pos);
 		    			char c = key.update();
-		    			//if the ball has passed the final line
+
 		    			if(pos <= 50)
 		    				{
 		    					System.out.println("strike " + pos);
@@ -318,13 +329,32 @@ public class Test extends Canvas implements Runnable
 	    								break;
 	    							}
 	    						pos = 960;
-	    						//sleep(1000);
 		    				}
 		    			if(c=='E')
 		    			{
-		    				if(pos <= 360 && pos >= 291)
+		    				if(pos >=360)
 		    					{
 		    						slow(pos);
+		    						miss(pos);
+		    						System.out.println("strike " + pos);
+		    						strikes++;
+		    						if(strikes == 3)
+		    							{
+		    								one = false;
+		    								two = false;
+		    								three = false;
+		    								outs++;
+		    								strikes = 0;
+		    								
+		    								break;
+		    							}
+		    						pos = 960;
+		    						sleep(1000);
+		    					}
+		    				else if(pos >= 291)
+		    					{
+		    						slow(pos);
+		    						swing();
 		    						drawPicture(100,100,400,80,single);
 		    						render();
 		    						sleep(1000);
@@ -347,9 +377,10 @@ public class Test extends Canvas implements Runnable
 		    						one = true;
 		    						break;
 		    					}
-		    				else if(pos <=290 && pos >=250)
+		    				else if(pos >=250)
 		    					{
 		    						slow(pos);
+		    						swing();
 		    						drawPicture(100,100,400,80,home);
 		    						render();
 		    						sleep(1000);
@@ -373,9 +404,10 @@ public class Test extends Canvas implements Runnable
 		    						runs++;
 		    						break;
 		    					}
-		    				else if(pos <= 249 && pos >= 184)
+		    				else if(pos >= 184)
 		    					{
 		    						slow(pos);
+		    						swing();
 		    						drawPicture(100,100,400,80,doubles);
 		    						render();
 		    						sleep(1000);
@@ -398,16 +430,20 @@ public class Test extends Canvas implements Runnable
 		    						two = true;
 		    						break;
 		    					}
-		    				else if(pos <= 248 && pos >=0 || pos <= 960 && pos >= 361)
+		    				else
 		    					{
 		    						slow(pos);
+		    						miss(pos);
 		    						System.out.println("strike " + pos);
 		    						strikes++;
 		    						if(strikes == 3)
 		    							{
+		    								one = false;
+		    								two = false;
+		    								three = false;
 		    								outs++;
 		    								strikes = 0;
-		    								miss(pos);
+		    								
 		    								break;
 		    							}
 		    						pos = 960;
@@ -418,14 +454,12 @@ public class Test extends Canvas implements Runnable
 		    			
 					}
 			}
-		//if answered correctly but not in correct spot
 		else if(answer && pos > 360 || pos <184)
 			{
 				System.out.println("2");
 				outs++;
 				miss(pos);
 			}
-		//if incorrectly answered
 		else
 			{
 				System.out.println("3");
@@ -468,9 +502,18 @@ public class Test extends Canvas implements Runnable
 			drawPicture(0,510,256,256,player5);
 			render();
 			sound("nes-15-01.wav");
+			sleep(1000);
 			
 		}
-
+	
+	private void swing()
+		{
+			drawPicture(0,0,960,960, second);
+			drawPicture(pos-100,692,28,28,baseball);
+			drawPicture(0,510,256,256,player5);
+			render();
+			sound("hit.aiff");
+		}
 	private void sleep(int time)
 		{
 			try
