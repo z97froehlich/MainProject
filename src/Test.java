@@ -37,9 +37,17 @@ public class Test extends Canvas implements Runnable
     public int[] player0 = load("player0.png");
     public int[] player1 = load("player1.png");
     public int[] player3 = load("player3.png");
-    public int[] question = load("Notecard.png");
+    public int[] player5 = load("player5.png");
     public int[] baseball = load("baseball.png");
     public int[] second = load("Background.png");
+    public int[] single = load("Single.png");
+    public int[] doubles = load("Double.png");
+    public int[] tripple = load("Tripple.png");
+    public int[] home = load("HomeRun.png");
+    
+    public boolean one = false;
+    public boolean two = false;
+    public boolean three = false;
     
     ArrayList<Integer> names = new ArrayList<Integer>();
     String answers = "";
@@ -168,13 +176,40 @@ public class Test extends Canvas implements Runnable
 					}
 			}
 	}
+	private void drawDots()
+		{
+			if(one)
+				{
+					for(int i = 672; i <= 683; i++)
+						{
+							for(int j = 588; j <=599; j++)
+								pixels[i*WIDTH + j] = 0xFF0000;
+						}
+				}
+			if(two)
+				{
+					for(int i = 568; i <= 579; i++)
+						{
+							for(int j = 472; j <=487; j++)
+								pixels[i*WIDTH + j] = 0xFF0000;
+						}
+				}
+			if(three)
+				{
+					for(int i = 672; i <= 683; i++)
+						{
+							for(int j = 360; j <=371; j++)
+								pixels[i*WIDTH + j] = 0xFF0000;
+						}
+				}
+		}
 
     private void draw()
 		{
     	if(state)
     	{
     		drawPicture(0, 0, 960,960, background);
-    		//drawDots(bases covered)
+    		drawDots();
     		if(System.currentTimeMillis()%1000 >= 500)
 			drawPicture(290, 300, 400, 80, enter);
     	}
@@ -184,11 +219,9 @@ public class Test extends Canvas implements Runnable
     		int random = (int) (Math.random()*names.size());
     		char a = answers.charAt(random);
     		answers = answers.substring(0, random) + answers.substring(random+1);
-    		System.out.println("Natural Questions/"+inning+"/"+names.get(random)+".png");
     		int[] question = load("Natural Questions/"+inning+"/"+names.get(random)+".png");
     		
     		names.remove(names.get(random));
-    		System.out.println(Arrays.toString(names.toArray()));
     		
     		drawPicture(0,0,960,960, second);
     		drawPicture(0,510,256,256, player0);
@@ -204,16 +237,7 @@ public class Test extends Canvas implements Runnable
     			drawPicture(pos,692,28,28,baseball);
     			if(System.currentTimeMillis()-500>time)
     			{
-    				try
-        				{
-        					InputStream in = new FileInputStream("nes-11-08.wav");
-        					AudioStream as = new AudioStream(in);
-        					AudioPlayer.player.start(as);
-        				}
-        			catch (IOException e1)
-        				{
-        					e1.printStackTrace();
-        				}
+    				sound("nes-11-08.wav");
     				pos-=50;
     				time = System.currentTimeMillis();
     			}
@@ -221,14 +245,12 @@ public class Test extends Canvas implements Runnable
     			char c = key.update();
     			if(c==a)
     			{
-    				System.out.println("got it");
     				hit(true);
     				state = true;
     				break;
     			}
     			else if(c!='E' && c!=' ')
     			{
-    				System.out.println(c);
     				hit(false);
     				state = true;
     				break;
@@ -239,193 +261,232 @@ public class Test extends Canvas implements Runnable
 	}
     
 	private void hit(boolean answer)
-		{
-			try 
-				{
-					Thread.sleep(500);
-					drawPicture(0,0,960,960, second);
-					drawPicture(pos-50,692,28,28,baseball);
-					drawPicture(0,510,256,256,player1);
-					render();
-					try
-	    				{
-	    					InputStream in = new FileInputStream("nes-10-10.wav");
-	    					AudioStream as = new AudioStream(in);
-	    					AudioPlayer.player.start(as);
-	    				}
-	    			catch (IOException e1)
-	    				{
-	    					e1.printStackTrace();
-	    				}
-					Thread.sleep(500);
-					drawPicture(0,0,960,960, second);
-					drawPicture(pos-100,692,28,28,baseball);
-					drawPicture(0,510,256,256,player3);
-					render();
-					try
-	    				{
-	    					InputStream in = new FileInputStream("nes-10-10.wav");
-	    					AudioStream as = new AudioStream(in);
-	    					AudioPlayer.player.start(as);
-	    				}
-	    			catch (IOException e1)
-	    				{
-	    					e1.printStackTrace();
-	    				}
-					System.out.println("working");
-					Thread.sleep(500);
-				} 
-				catch (InterruptedException e) 
-				{
-					e.printStackTrace();
-				}
-			if(answer)
-				{
-					try
-						{
-							drawPicture(0,0,960,960, second);
-							drawPicture(0,510,256,256, player0);
-							drawPicture(100,100,400,80,enter);
-							Thread.sleep(1000);
-						}
-					catch (InterruptedException e)
-						{
-							e.printStackTrace();
-						}
-					
-					pos = 960;
-					
-					while(pos > 50)
-						{
-							drawPicture(0,0,960,960, second);
-							drawPicture(100,100,400,80,enter);
-			    			drawPicture(0,510,256,256, player0);
-			    			drawPicture(pos,692,28,28,baseball);
-			    			if(System.currentTimeMillis()-40>time)
-			    			{
-			    				int i = (int) (Math.random()*20) -10;
-			    				pos-=50 + i;
-			    				time = System.currentTimeMillis();
-			    				try
-			        				{
-			        					InputStream in = new FileInputStream("nes-11-08.wav");
-			        					AudioStream as = new AudioStream(in);
-			        					AudioPlayer.player.start(as);
-			        				}
-			        			catch (IOException e1)
-			        				{
-			        					e1.printStackTrace();
-			        				}
-			    			}
-			    			render();
-			    			System.out.println(pos);
-			    			char c = key.update();
-			    			if(c=='E')
-			    			{
-			    				if(pos <= 360 && pos >= 291)
-			    					{
-			    						slow(pos);
-			    						strikes = 0;
-			    						System.out.println("single " + pos);
-			    						break;
-			    					}
-			    				else if(pos <=290 && pos >=250)
-			    					{
-			    						slow(pos);
-			    						System.out.println("home " + pos);
-			    						strikes = 0;
-			    						break;
-			    					}
-			    				else if(pos <= 249 && pos >= 184)
-			    					{
-			    						slow(pos);
-			    						System.out.println("double " + pos);
-			    						strikes = 0;
-			    						break;
-			    					}
-			    				else if(pos <= 248 && pos >=0 || pos <= 960 && pos >= 361)
-			    					{
-			    						slow(pos);
-			    						System.out.println("strike " + pos);
-			    						strikes++;
-			    						if(strikes == 3)
-			    							{
-			    								outs++;
-			    								strikes = 0;
-			    								break;
-			    							}
-			    						pos = 960;
-			    						try
-											{
-												Thread.sleep(1000);
-											}
-										catch (InterruptedException e)
-											{
-												// TODO Auto-generated catch block
-												e.printStackTrace();
-											}
-			    					}
-			    				
-			    			}
-			    			
-						}
-				}
-			else
-				{
-					outs++;
-					missed++;
-					if(missed > 20)
-						{
-							//harriet kills
-							//load lose screen with sound
-						}
-					//incriment outs
-					//if number missed > 20 harriet kills roy
-				}
+	{
+		//runs through next pictures
+		sleep(500);
+		drawPicture(0,0,960,960, second);
+		drawPicture(pos-50,692,28,28,baseball);
+		drawPicture(0,510,256,256,player1);
+		render();
+		sound("nes-10-10.wav");
+		sleep(500);
+		drawPicture(0,0,960,960, second);
+		drawPicture(pos-100,692,28,28,baseball);
+		drawPicture(0,510,256,256,player3);
+		render();
+		sound("nes-10-10.wav");
+		sleep(500); 
+		
+		//if the player answered correctly in the correct spot
+		if(answer && pos <= 360 && pos >=184)
+			{
+				//go to the third setting-re pitch
+				drawPicture(0,0,960,960, second);
+				drawPicture(0,510,256,256, player0);
+				drawPicture(100,100,400,80,enter);
+				sleep(1000);
+				pos = 960;
+				//keeps the ball in bounds
+				while(pos > 50)
+					{
+						drawPicture(0,0,960,960, second);
+						drawPicture(100,100,400,80,enter);
+		    			drawPicture(0,510,256,256, player0);
+		    			drawPicture(pos,692,28,28,baseball);
+		    			
+		    			//if enough time has passed, move ball again
+		    			if(System.currentTimeMillis()-40>time)
+		    			{
+		    				int i = (int) (Math.random()*20) -10;
+		    				pos-=50 + i;
+		    				time = System.currentTimeMillis();
+		    				sound("nes-11-08.wav");
+		    			}
+		    			
+		    			render();
+		    			System.out.println(pos);
+		    			char c = key.update();
+		    			//if the ball has passed the final line
+		    			if(pos <= 50)
+		    				{
+		    					System.out.println("strike " + pos);
+	    						strikes++;
+	    						if(strikes == 3)
+	    							{
+	    								outs++;
+	    								strikes = 0;
+	    								break;
+	    							}
+	    						pos = 960;
+	    						//sleep(1000);
+		    				}
+		    			if(c=='E')
+		    			{
+		    				if(pos <= 360 && pos >= 291)
+		    					{
+		    						slow(pos);
+		    						drawPicture(100,100,400,80,single);
+		    						render();
+		    						sleep(1000);
+		    						strikes = 0;
+		    						System.out.println("single " + pos);
+		    						if(three)
+		    							{
+		    								runs++;
+		    								three  = false;
+		    							}
+		    						if(two)
+		    							{
+		    								three = true;
+		    								two = false;
+		    							}
+		    						if(one)
+		    							{
+		    								two = true;
+		    							}
+		    						one = true;
+		    						break;
+		    					}
+		    				else if(pos <=290 && pos >=250)
+		    					{
+		    						slow(pos);
+		    						drawPicture(100,100,400,80,home);
+		    						render();
+		    						sleep(1000);
+		    						System.out.println("home " + pos);
+		    						strikes = 0;
+		    						if(one)
+		    							{
+		    								runs++;
+		    								one = false;
+		    							}
+		    						if(two)
+		    							{
+		    								runs++;
+		    								two = false;
+		    							}
+		    						if(three)
+		    							{
+		    								runs++;
+		    								three = false;
+		    							}
+		    						runs++;
+		    						break;
+		    					}
+		    				else if(pos <= 249 && pos >= 184)
+		    					{
+		    						slow(pos);
+		    						drawPicture(100,100,400,80,doubles);
+		    						render();
+		    						sleep(1000);
+		    						System.out.println("double " + pos);
+		    						strikes = 0;
+		    						if(three)
+		    							{
+		    								runs++;
+		    								three = false;
+		    							}
+		    						if(two)
+		    							{
+		    								runs++;
+		    							}
+		    						if(one)
+		    							{
+		    								three = true;
+		    								one = false;
+		    							}
+		    						two = true;
+		    						break;
+		    					}
+		    				else if(pos <= 248 && pos >=0 || pos <= 960 && pos >= 361)
+		    					{
+		    						slow(pos);
+		    						System.out.println("strike " + pos);
+		    						strikes++;
+		    						if(strikes == 3)
+		    							{
+		    								outs++;
+		    								strikes = 0;
+		    								miss(pos);
+		    								break;
+		    							}
+		    						pos = 960;
+		    						sleep(1000);
+		    					}
+		    				
+		    			}
+		    			
+					}
+			}
+		//if answered correctly but not in correct spot
+		else if(answer && pos > 360 || pos <184)
+			{
+				System.out.println("2");
+				outs++;
+				miss(pos);
+			}
+		//if incorrectly answered
+		else
+			{
+				System.out.println("3");
+				outs++;
+				missed++;
+				miss(pos);
+				if(missed > 20)
+					{
+						//harriet kills
+						//load lose screen with sound
+					}
+			}
 			
 		}
 
 	private void slow(int pos2)
 		{
-			try
-				{
-					Thread.sleep(500);
-				}
-			catch (InterruptedException e)
-				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+			//draws last two frames
+			sleep(500);
 			drawPicture(0,0,960,960, second);
 			drawPicture(pos-50,692,28,28,baseball);
 			drawPicture(0,510,256,256,player1);
 			render();
-			try
-				{
-					InputStream in = new FileInputStream("nes-10-10.wav");
-					AudioStream as = new AudioStream(in);
-					AudioPlayer.player.start(as);
-				}
-			catch (IOException e1)
-				{
-					e1.printStackTrace();
-				}
-			try
-				{
-					Thread.sleep(500);
-				}
-			catch (InterruptedException e)
-				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+			sound("nes-10-10.wav");
+			sleep(500);
 			drawPicture(0,0,960,960, second);
 			drawPicture(pos-100,692,28,28,baseball);
 			drawPicture(0,510,256,256,player3);
 			render();
+			sound("nes-10-10.wav");
+			sleep(500);
+			
+		}
+	
+	private void miss(int pos)
+		{
+			// draws final missing frame
+			drawPicture(0,0,960,960, second);
+			drawPicture(pos-100,692,28,28,baseball);
+			drawPicture(0,510,256,256,player5);
+			render();
+			sound("nes-15-01.wav");
+			
+		}
+
+	private void sleep(int time)
+		{
 			try
 				{
-					InputStream in = new FileInputStream("nes-10-10.wav");
+					Thread.sleep(time);
+				}
+			catch (InterruptedException e)
+				{
+					e.printStackTrace();
+				}
+		}
+	private void sound(String path)
+		{
+			try
+				{
+					InputStream in = new FileInputStream(path);
 					AudioStream as = new AudioStream(in);
 					AudioPlayer.player.start(as);
 				}
@@ -433,18 +494,7 @@ public class Test extends Canvas implements Runnable
 				{
 					e1.printStackTrace();
 				}
-			System.out.println("working");
-			try
-				{
-					Thread.sleep(500);
-				}
-			catch (InterruptedException e)
-				{
-					e.printStackTrace();
-				}
-			
 		}
-
 	private char update()
 		{
 			draw();
@@ -471,10 +521,8 @@ public class Test extends Canvas implements Runnable
     				int w = image.getWidth();
     				
     				int h = image.getHeight();
-    				System.out.println(w + " " + h);
     				pix = new int[w*h];
     				image.getRGB(0, 0, w, h, pix, 0, w);
-    				System.out.println(pix[0] + " " + pix[1]);
     				return pix;
     			}
     			catch(IOException e)
