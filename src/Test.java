@@ -12,10 +12,13 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
 
+import sun.audio.*;
+
+import java.io.*;
+
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 public class Test extends Canvas implements Runnable 
 {
@@ -36,15 +39,19 @@ public class Test extends Canvas implements Runnable
     public int[] player3 = load("player3.png");
     public int[] question = load("Notecard.png");
     public int[] baseball = load("baseball.png");
+    public int[] second = load("Background.png");
+    
     ArrayList<Integer> names = new ArrayList<Integer>();
     String answers = "";
     
+    int missed = 0;
     int strikes = 0;
     int balls = 0;
     int outs = 0;
     int fouls = 0;
     long timeAnswer = System.currentTimeMillis();
-    int inning = 1;
+    int inning = 0;
+    int runs = 0;
     public int pos = 960;
     
     public BufferedImage img;
@@ -55,20 +62,24 @@ public class Test extends Canvas implements Runnable
 
     public static void main(String[] arg) 
     {
-        Test wind = new Test();
-        frame = new JFrame("WINDOW");
-        frame.add(wind);
-        frame.setVisible(true);
-        frame.setSize(WIDTH, HEIGHT);
-        frame.addKeyListener(key);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        wind.init();
+        MainScreen scr = new MainScreen();
     }
 
     public void init() 
     {
+    	Test wind = new Test();
+    	frame = new JFrame("WINDOW");
+        frame.add(wind);
+        frame.add(this);
+        frame.setVisible(true);
+        frame.setSize(WIDTH, HEIGHT);
+        frame.addKeyListener(key);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         thread = new Thread(this);
         thread.start();
+        frame.setLocationRelativeTo(null);
+        frame.setResizable(false);
+        frame.setAutoRequestFocus(true);
         img = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
         pixels = ((DataBufferInt) img.getRaster().getDataBuffer()).getData();
     }
@@ -76,18 +87,32 @@ public class Test extends Canvas implements Runnable
     public void run() 
     {
     	long time = System.currentTimeMillis();
-    	//
+    	
+    	InputStream in;
+    	AudioStream as = null;
+		try
+			{
+				in = new FileInputStream("Take Me out to the Ball Game.wav");
+				as = new AudioStream(in);
+				AudioPlayer.player.start(as);
+			}
+		catch (IOException e1)
+			{
+				e1.printStackTrace();
+			}
+    	
+    	
         while (running) 
         {
-        	// unlimits the FPS but keeps the updates within 60 per second so no fast motion happens
         	if(System.currentTimeMillis()-(time + 10) >= 0)
         		{
         			time = System.currentTimeMillis();
         			if(update() == 'E' && state)
         			{
         			state = false;
+        			AudioPlayer.player.stop(as);
         			pos = 900;
-        			if(names.size()==0)
+        			if(names.size()==0 || outs == 3)
         			{
         				names = new ArrayList<Integer>();
             			for(int i = 0; i< 10; i++)
@@ -96,12 +121,13 @@ public class Test extends Canvas implements Runnable
             			}
             			try 
             			{
+            				inning++;
     						Scanner scan = new Scanner(new File("Natural Questions/"+inning+"/Answers.txt"));
     						answers = scan.next();
-    					} 
+    					}
+            			
             			catch (FileNotFoundException e) 
             			{
-    						// TODO Auto-generated catch block
     						e.printStackTrace();
     					}
         			}
@@ -109,7 +135,6 @@ public class Test extends Canvas implements Runnable
         			
         		}
         		}
-        	//System.out.println("render");
         	render();
         }     
     }
@@ -121,22 +146,11 @@ public class Test extends Canvas implements Runnable
         {
             createBufferStrategy(3);
             return;
-        }
-        //draws stuff to Screen
-        
+        }        
         Graphics g = bs.getDrawGraphics();
         g.drawImage(img, 0, 0, WIDTH, HEIGHT, null);
         count++;
-        if(count == 100)
-        	{
-        		double disp = System.currentTimeMillis()-time;
-        		disp/=1000.0;
-        		disp = 1/disp;
-        		disp*=100;
-        		frame.setTitle("Frames: " + disp);
-                time = System.currentTimeMillis();
-                count = 0;
-        	}
+        frame.setTitle("                                                                                                        OUTS: " + outs + " STRIKES: " + strikes + " INNING: " + inning + " RUNS: " + runs);
         
         g.dispose();
         bs.show();
@@ -157,12 +171,12 @@ public class Test extends Canvas implements Runnable
 
     private void draw()
 		{
-			// all the calls for drawing
     	if(state)
     	{
     		drawPicture(0, 0, 960,960, background);
     		//drawDots(bases covered)
-			drawPicture(300, 500, 200, 40, enter);
+    		if(System.currentTimeMillis()%1000 >= 500)
+			drawPicture(290, 300, 400, 80, enter);
     	}
     	
     	else
@@ -176,21 +190,30 @@ public class Test extends Canvas implements Runnable
     		names.remove(names.get(random));
     		System.out.println(Arrays.toString(names.toArray()));
     		
-    		drawPicture(0,600,256,256, player0);
+    		drawPicture(0,0,960,960, second);
+    		drawPicture(0,510,256,256, player0);
     		drawPicture(0,100,960,200, question);
-    		//drawPicture(pitcher);
-    		//drawPicture(background);
-    		
-    		//drawPicture(answers);
-    		//drawPicture(pitcher1);
-    		//drawPicture(ball,count);
+
     		long time = System.currentTimeMillis();
     		while(pos>100)
     		{
-    			//drawPicture(background);
-    			drawPicture(pos,800,28,28,baseball);
+    			
+    			drawPicture(0,0,960,960, second);
+    			drawPicture(0,100,960,200, question);
+    			drawPicture(0,510,256,256, player0);
+    			drawPicture(pos,692,28,28,baseball);
     			if(System.currentTimeMillis()-500>time)
     			{
+    				try
+        				{
+        					InputStream in = new FileInputStream("nes-11-08.wav");
+        					AudioStream as = new AudioStream(in);
+        					AudioPlayer.player.start(as);
+        				}
+        			catch (IOException e1)
+        				{
+        					e1.printStackTrace();
+        				}
     				pos-=50;
     				time = System.currentTimeMillis();
     			}
@@ -199,33 +222,229 @@ public class Test extends Canvas implements Runnable
     			if(c==a)
     			{
     				System.out.println("got it");
-    				try 
-    				{
-						Thread.sleep(2000);
-						drawPicture(pos-50,800,28,28,baseball);
-						drawPicture(0,600,256,256,player1);
-						render();
-						System.out.println("working");
-						Thread.sleep(2000);
-						drawPicture(pos-100,800,28,28,baseball);
-						drawPicture(0,600,256,256,player3);
-						render();
-						System.out.println("working");
-					} 
-    				catch (InterruptedException e) 
-    				{
-						e.printStackTrace();
-					}
+    				hit(true);
+    				state = true;
+    				break;
     			}
     			else if(c!='E' && c!=' ')
     			{
     				System.out.println(c);
+    				hit(false);
+    				state = true;
+    				break;
     			}
     		}
     		state = true;
     	}
 	}
     
+	private void hit(boolean answer)
+		{
+			try 
+				{
+					Thread.sleep(500);
+					drawPicture(0,0,960,960, second);
+					drawPicture(pos-50,692,28,28,baseball);
+					drawPicture(0,510,256,256,player1);
+					render();
+					try
+	    				{
+	    					InputStream in = new FileInputStream("nes-10-10.wav");
+	    					AudioStream as = new AudioStream(in);
+	    					AudioPlayer.player.start(as);
+	    				}
+	    			catch (IOException e1)
+	    				{
+	    					e1.printStackTrace();
+	    				}
+					Thread.sleep(500);
+					drawPicture(0,0,960,960, second);
+					drawPicture(pos-100,692,28,28,baseball);
+					drawPicture(0,510,256,256,player3);
+					render();
+					try
+	    				{
+	    					InputStream in = new FileInputStream("nes-10-10.wav");
+	    					AudioStream as = new AudioStream(in);
+	    					AudioPlayer.player.start(as);
+	    				}
+	    			catch (IOException e1)
+	    				{
+	    					e1.printStackTrace();
+	    				}
+					System.out.println("working");
+					Thread.sleep(500);
+				} 
+				catch (InterruptedException e) 
+				{
+					e.printStackTrace();
+				}
+			if(answer)
+				{
+					try
+						{
+							drawPicture(0,0,960,960, second);
+							drawPicture(0,510,256,256, player0);
+							drawPicture(100,100,400,80,enter);
+							Thread.sleep(1000);
+						}
+					catch (InterruptedException e)
+						{
+							e.printStackTrace();
+						}
+					
+					pos = 960;
+					
+					while(pos > 50)
+						{
+							drawPicture(0,0,960,960, second);
+							drawPicture(100,100,400,80,enter);
+			    			drawPicture(0,510,256,256, player0);
+			    			drawPicture(pos,692,28,28,baseball);
+			    			if(System.currentTimeMillis()-40>time)
+			    			{
+			    				int i = (int) (Math.random()*20) -10;
+			    				pos-=50 + i;
+			    				time = System.currentTimeMillis();
+			    				try
+			        				{
+			        					InputStream in = new FileInputStream("nes-11-08.wav");
+			        					AudioStream as = new AudioStream(in);
+			        					AudioPlayer.player.start(as);
+			        				}
+			        			catch (IOException e1)
+			        				{
+			        					e1.printStackTrace();
+			        				}
+			    			}
+			    			render();
+			    			System.out.println(pos);
+			    			char c = key.update();
+			    			if(c=='E')
+			    			{
+			    				if(pos <= 360 && pos >= 291)
+			    					{
+			    						slow(pos);
+			    						strikes = 0;
+			    						System.out.println("single " + pos);
+			    						break;
+			    					}
+			    				else if(pos <=290 && pos >=250)
+			    					{
+			    						slow(pos);
+			    						System.out.println("home " + pos);
+			    						strikes = 0;
+			    						break;
+			    					}
+			    				else if(pos <= 249 && pos >= 184)
+			    					{
+			    						slow(pos);
+			    						System.out.println("double " + pos);
+			    						strikes = 0;
+			    						break;
+			    					}
+			    				else if(pos <= 248 && pos >=0 || pos <= 960 && pos >= 361)
+			    					{
+			    						slow(pos);
+			    						System.out.println("strike " + pos);
+			    						strikes++;
+			    						if(strikes == 3)
+			    							{
+			    								outs++;
+			    								strikes = 0;
+			    								break;
+			    							}
+			    						pos = 960;
+			    						try
+											{
+												Thread.sleep(1000);
+											}
+										catch (InterruptedException e)
+											{
+												// TODO Auto-generated catch block
+												e.printStackTrace();
+											}
+			    					}
+			    				
+			    			}
+			    			
+						}
+				}
+			else
+				{
+					outs++;
+					missed++;
+					if(missed > 20)
+						{
+							//harriet kills
+							//load lose screen with sound
+						}
+					//incriment outs
+					//if number missed > 20 harriet kills roy
+				}
+			
+		}
+
+	private void slow(int pos2)
+		{
+			try
+				{
+					Thread.sleep(500);
+				}
+			catch (InterruptedException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			drawPicture(0,0,960,960, second);
+			drawPicture(pos-50,692,28,28,baseball);
+			drawPicture(0,510,256,256,player1);
+			render();
+			try
+				{
+					InputStream in = new FileInputStream("nes-10-10.wav");
+					AudioStream as = new AudioStream(in);
+					AudioPlayer.player.start(as);
+				}
+			catch (IOException e1)
+				{
+					e1.printStackTrace();
+				}
+			try
+				{
+					Thread.sleep(500);
+				}
+			catch (InterruptedException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			drawPicture(0,0,960,960, second);
+			drawPicture(pos-100,692,28,28,baseball);
+			drawPicture(0,510,256,256,player3);
+			render();
+			try
+				{
+					InputStream in = new FileInputStream("nes-10-10.wav");
+					AudioStream as = new AudioStream(in);
+					AudioPlayer.player.start(as);
+				}
+			catch (IOException e1)
+				{
+					e1.printStackTrace();
+				}
+			System.out.println("working");
+			try
+				{
+					Thread.sleep(500);
+				}
+			catch (InterruptedException e)
+				{
+					e.printStackTrace();
+				}
+			
+		}
+
 	private char update()
 		{
 			draw();
